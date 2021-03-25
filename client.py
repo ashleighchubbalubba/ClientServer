@@ -5,8 +5,7 @@ import socket
 from rs import rs
 #from ts import ts
 
-def client(): 
-    
+def client(rsHostname, rsListenPort, tsListenPort):
     # list that contains all queried hostnames
     hostnameList = []
 
@@ -28,7 +27,8 @@ def client():
     
     # get client's IP address
     localhost_addr = socket.gethostbyname(socket.gethostname())
-
+    
+    
     # iterate through each hostnameList to talk to servers
     for hostname in hostnameList:
         # talking to RS
@@ -36,23 +36,36 @@ def client():
         server_binding = (localhost_addr, rsListenPort)
         csRS.connect(server_binding)
 
+        # Got a connection request from rs
+        rsSockid, addr = csRS.accept()
+         
+        # Send message to rs
+        msg = hostname
+        rsSockid.send(msg.encode('utf-8'))
+
         # receiving RS's answer
-        # read the last two word to check if its "A" or "NS"
+        receivedString = "s A"
+        word_list = receivedString.split()
 
-            # If flag is A --> output in RESOLVED.txt (one line per result)
-            # If flag is NS --> use second socket to talk to TS 
-
-
-        # talking to TS
+        # if last word is A
+        if(word_list[-1] == "A"):
+            # print("found in RS")
+            rs_output = open("ASH+VID-RESOLVED.txt", "w")
+            n = rs_output.write(receivedString)
+            rs_output.close()
+            continue
+            
+        # talking to ts
         # connect to the TS server on local machine
         server_binding = (localhost_addr, tsListenPort)    
         csTS.connect(server_binding)
 
         # receiving TS's answer
-            # If flag is A --> output in RESOLVED.txt (one line per result)
-            # If flag is NS --> outputs TS's sent message: "Hostname - Error:HOST NOT FOUND"
+        ts_output = open("ASH+VID-RESOLVED.txt", "w")
+        n = ts_output.write(receivedString)
+        ts_output.close()
 
-    
+'''
     # Receive data from the server
     data_from_server=cs.recv(100)
     print("[C]: Data received from server: {}".format(data_from_server.decode('utf-8')))
@@ -60,12 +73,17 @@ def client():
     # close the client socket
     cs.close()
     exit()
-    
+    '''
 
 if __name__ == "__main__":
-    #client()
-    rs()
-    '''
+    #rsHostname = 
+    #rsListenPort = 50007
+    #tsListenPort = 
+
+    client(rsHostname, rsListenPort, tsListenPort)
+   
+    # rs(rsListenPort, "google.com")
+  
     t1 = threading.Thread(name='server', target=rs) # launch a separate thread for the server
     t1.start()
 
@@ -75,4 +93,4 @@ if __name__ == "__main__":
 
     time.sleep(5) # sleep for a bit to give the threads time to complete
     print("Done.")
-    '''
+    

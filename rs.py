@@ -3,7 +3,8 @@ import time
 import random
 import socket
 
-def rs():
+def rs(rsListenPort): 
+    
     dnsTable = [] # list of arrays [ [hostname1,ip1,flag1], [hostname1,ip1,flag1]]
     currInfo = [] # current line's info [hostname1,ip1,flag1]
 
@@ -15,7 +16,7 @@ def rs():
             currInfo.append(word) # (hostname,ipaddress,flag)
         dnsTable.append(currInfo)
         currInfo = []
-
+    '''
     try:
         rs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # create a socket (AF_INET -> IPV4 and SOCKET_STREAM -> TCP transport protocol)
         print("[S]: RS socket created") # creating socket was successful
@@ -33,25 +34,32 @@ def rs():
     # print("[S]: Server IP address is {}".format(localhost_ip))
     csockid, addr = rs.accept()
     # print ("[S]: Got a connection request from a client at {}".format(addr))
-
+    
+    # Receive data from the client
+    # WE NEED TO TEST
+    data_from_client=rs.recv(100)
+    print("Data received from the client: {}".format(data_from_client.decode('utf-8')))
+    '''
+    string = ""
     # searching the table for hostname that the client is requesting
     for info in dnsTable:
-        if(info[0] == )
-        
-        qtsdatacenter.aws.com ,  128.64.3.2 ,  A ,  
-        mx.rutgers.edu ,  192.64.4.2 ,  A ,  
-        kill.cs.rutgers.edu ,  182.48.3.2 ,  A ,  
-        www.ibm.com ,  64.42.3.4 ,  A ,  
-        www.google.com ,  8.6.4.2 ,  A ,  
-        localhost ,  - ,  NS , 
-        
-    # send A flag or NS flag
+        # check only the first item in each list in DNSTable (hostname)
+        if(info[0] == data_from_client):
+            # send A flag
+            string = "" + info[0] + " " + info[1] + " " + info[2]
+            break
+    if(string == ""):
+        string = "TSHostname - NS"
 
-    # send a intro message to the client.  
-    msg = "Welcome to CS 352!"
-    csockid.send(msg.encode('utf-8'))
+    # print("string: ", string)
 
+    '''
+    # send string to the client.  
+    csockid.send(string.encode('utf-8'))
+    '''
+    '''
     # Close the server socket
     rs.close()
     exit()
+    '''
     
