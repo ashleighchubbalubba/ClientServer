@@ -3,59 +3,83 @@ import time
 import random
 import socket
 from rs import rs
-#from ts import ts
+#from ts import ts  
 
 def client(rsHostname, rsListenPort, tsListenPort):
     # list that contains all queried hostnames
     hostnameList = []
 
     try:
-        # create first socket here
+        # create RS socket 
         csRS = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # create a second socket here
-        csTS = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # print("[C]: Client socket created")
+        # create TS socket 
+        #csTS = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     except socket.error as err:
         print('socket open error: {} \n'.format(err))
         exit()
 
-    # populating hostnameList while reading the file
+    # populate hostNameList with hostnames from 'PROJI-HNS.txt'(one line of the file = one element of hostnameList) 
     file = open('PROJI-HNS.txt', 'r')
     linesList = file.readlines()
-    for line in linesList: # for each entry
+    for line in linesList: 
         hostnameList.append(line)
     
     # get client's IP address
     localhost_addr = socket.gethostbyname(socket.gethostname())
     
-    
-    # iterate through each hostnameList to talk to servers
+    # iterate through each hostnameList to query each hostName and talk to servers
     for hostname in hostnameList:
-        # talking to RS
-        # connect to the RS server on local machine
+
+        ''' connect to the RS server on local machine '''
         server_binding = (localhost_addr, rsListenPort)
         csRS.connect(server_binding)
+        csRS.listen(100)
 
-        # Got a connection request from rs
+        # Get a connection request from RS
         rsSockid, addr = csRS.accept()
          
-        # Send message to rs
-        msg = hostname
-        rsSockid.send(msg.encode('utf-8'))
-
-        # receiving RS's answer
-        receivedString = "s A"
+        # Send queried hostname to RS
+        queriedHostname = hostname
+        rsSockid.send(queriedHostname.encode('utf-8'))
+        
+        # receive RS's answer
+        receivedString = csRS.recv(300)
+        print("[Client]: Data received from RS: {}".format(receivedString.decode('utf-8')))
         word_list = receivedString.split()
 
-        # if last word is A
+        # if last word of receivedString is A, we found a match
         if(word_list[-1] == "A"):
-            # print("found in RS")
             rs_output = open("ASH+VID-RESOLVED.txt", "w")
             n = rs_output.write(receivedString)
             rs_output.close()
-            continue
-            
-        # talking to ts
+            continue  # found a match so don't need to connect to TS, move onto next hostname
+ 
+        '''
+        # connect to the TS server on local machine 
+        server_binding = (localhost_addr, tsListenPort)
+        csTS.connect(server_binding)
+        csTS.listen(100)
+
+        # Get a connection request from TS
+        tsSockid, addr = csTS.accept()
+         
+        # Send queried hostname to TS
+        queriedHostname = hostname
+        tsSockid.send(queriedHostname.encode('utf-8'))
+        
+        # receive TS's message
+        receivedString = csTS.recv(100)
+        print("[Client]: Data received from RS: {}".format(receivedString.decode('utf-8')))
+        word_list = receivedString.split()
+
+        # if last word of receivedString is A, we found a match
+        if(word_list[-1] == "A"):
+            # print("found in RS")
+            ts_output = open("ASH+VID-RESOLVED.txt", "w")
+            n = ts_output.write(receivedString)
+            ts_output.close()
+            continue  # we found a match so move onto next hostname (don't need to connect to TS)
+
         # connect to the TS server on local machine
         server_binding = (localhost_addr, tsListenPort)    
         csTS.connect(server_binding)
@@ -64,26 +88,22 @@ def client(rsHostname, rsListenPort, tsListenPort):
         ts_output = open("ASH+VID-RESOLVED.txt", "w")
         n = ts_output.write(receivedString)
         ts_output.close()
-
-'''
-    # Receive data from the server
-    data_from_server=cs.recv(100)
-    print("[C]: Data received from server: {}".format(data_from_server.decode('utf-8')))
+        '''
 
     # close the client socket
-    cs.close()
+    csRS.close()
+    csTS.close()
     exit()
-    '''
+
 
 if __name__ == "__main__":
-    #rsHostname = 
-    #rsListenPort = 50007
-    #tsListenPort = 
+    rsHostname = "Anything"
+    rsListenPort = 50007
+    tsListenPort = 50008
 
     client(rsHostname, rsListenPort, tsListenPort)
-   
-    # rs(rsListenPort, "google.com")
-  
+    rs(rsListenPort)
+    '''
     t1 = threading.Thread(name='server', target=rs) # launch a separate thread for the server
     t1.start()
 
@@ -93,4 +113,4 @@ if __name__ == "__main__":
 
     time.sleep(5) # sleep for a bit to give the threads time to complete
     print("Done.")
-    
+    '''
