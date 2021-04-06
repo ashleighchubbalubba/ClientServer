@@ -5,18 +5,9 @@ import socket
 from rs import rs
 #from ts import ts  
 
-def client(rsHostname, rsListenPort, tsListenPort):
+def client(rsHostname, rsListenPort):
     # list that contains all queried hostnames
     hostnameList = []
-
-    try:
-        # create RS socket 
-        csRS = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # create TS socket 
-        #csTS = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    except socket.error as err:
-        print('socket open error: {} \n'.format(err))
-        exit()
 
     # populate hostNameList with hostnames from 'PROJI-HNS.txt'(one line of the file = one element of hostnameList) 
     file = open('PROJI-HNS.txt', 'r')
@@ -27,18 +18,25 @@ def client(rsHostname, rsListenPort, tsListenPort):
     # get client's IP address
     localhost_addr = socket.gethostbyname(socket.gethostname())
     
+    try:
+        # create RS socket
+        csRS = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+        # create TS socket 
+        #csTS = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    except socket.error as err:
+        print('socket open error: {} \n'.format(err))
+        exit()
+
+    ''' connect to the RS server on local machine '''
+    server_binding = (localhost_addr, rsListenPort)
+    csRS.connect(server_binding)
+    csRS.listen(100)
+
+    # Get a connection request from RS
+    rsSockid, addr = csRS.accept()
+
     # iterate through each hostnameList to query each hostName and talk to servers
-    for hostname in hostnameList:
-
-        ''' connect to the RS server on local machine '''
-        server_binding = (localhost_addr, rsListenPort)
-        csRS.connect(server_binding)
-        csRS.listen(100)
-
-        # Get a connection request from RS
-        rsSockid, addr = csRS.accept()
-         
-        # Send queried hostname to RS
+    for hostname in hostnameList: # Send queried hostname to RS
         queriedHostname = hostname
         rsSockid.send(queriedHostname.encode('utf-8'))
         
@@ -99,18 +97,17 @@ def client(rsHostname, rsListenPort, tsListenPort):
 if __name__ == "__main__":
     rsHostname = "Anything"
     rsListenPort = 50007
-    tsListenPort = 50008
 
-    client(rsHostname, rsListenPort, tsListenPort)
-    rs(rsListenPort)
-    '''
-    t1 = threading.Thread(name='server', target=rs) # launch a separate thread for the server
+    t1 = threading.Thread(name='rs', target=rs(rsListenPort)) # launch a separate thread for the server
     t1.start()
 
     time.sleep(random.random() * 5) # sleep for some random amount of time
-    t2 = threading.Thread(name='client', target=client) # launch another thread for the client
+    t2 = threading.Thread(name='client', target=client(rsHostname, rsListenPort)) # launch another thread for the client
     t2.start()
 
     time.sleep(5) # sleep for a bit to give the threads time to complete
     print("Done.")
-    '''
+
+    rs(rsListenPort)
+    client(rsHostname, rsListenPort)
+    

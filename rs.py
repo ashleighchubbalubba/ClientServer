@@ -17,6 +17,8 @@ def rs(rsListenPort):
         dnsTable.append(currInfo)
         currInfo = []
     
+    tsHostName = dnsTable[-1][0]  
+
     try:
         rs = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # create a socket (AF_INET -> IPV4 and SOCKET_STREAM -> TCP transport protocol)
         print("[S]: RS socket created") # creating socket was successful
@@ -26,7 +28,7 @@ def rs(rsListenPort):
     
     server_binding = ('', rsListenPort)
     rs.bind(server_binding) # bind the socket to the port we want to use (port 50007 in this case)
-    rs.listen(10) # start listening for connections (1 tells you how many connections ur allowed to have in queue)
+    rs.listen(1) # start listening for connections (1 tells you how many connections ur allowed to have in queue)
 
     csockid, addr = rs.accept()
     
