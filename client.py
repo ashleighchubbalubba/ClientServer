@@ -17,12 +17,10 @@ def client(rsHostname, rsListenPort):
     
     # get client's IP address
     localhost_addr = socket.gethostbyname(socket.gethostname())
-    
+
     try:
         # create RS socket
         csRS = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
-        # create TS socket 
-        #csTS = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     except socket.error as err:
         print('socket open error: {} \n'.format(err))
         exit()
@@ -30,22 +28,24 @@ def client(rsHostname, rsListenPort):
     ''' connect to the RS server on local machine '''
     server_binding = (localhost_addr, rsListenPort)
     csRS.connect(server_binding)
-    csRS.listen(100)
-
-    # Get a connection request from RS
-    rsSockid, addr = csRS.accept()
 
     # iterate through each hostnameList to query each hostName and talk to servers
     for hostname in hostnameList: # Send queried hostname to RS
         queriedHostname = hostname
-        rsSockid.send(queriedHostname.encode('utf-8'))
+        print(queriedHostname)
+
+        # Get a connection request from RS
+        #rsSockid, addr = csRS.accept()
+        csRS.send(queriedHostname.encode('utf-8'))
         
         # receive RS's answer
-        receivedString = csRS.recv(300)
+        receivedString = csRS.recv(300) 
         print("[Client]: Data received from RS: {}".format(receivedString.decode('utf-8')))
         word_list = receivedString.split()
 
         # if last word of receivedString is A, we found a match
+        print("word_list", word_list)
+        #print("word_list[0]", word_list[-1])
         if(word_list[-1] == "A"):
             rs_output = open("ASH+VID-RESOLVED.txt", "w")
             n = rs_output.write(receivedString)
@@ -90,24 +90,14 @@ def client(rsHostname, rsListenPort):
 
     # close the client socket
     csRS.close()
-    csTS.close()
+    #csTS.close()
     exit()
 
 
 if __name__ == "__main__":
-    rsHostname = "Anything"
+    rsHostname = "LAPTOP-8NUTDG7L"
     rsListenPort = 50007
 
-    t1 = threading.Thread(name='rs', target=rs(rsListenPort)) # launch a separate thread for the server
-    t1.start()
-
-    time.sleep(random.random() * 5) # sleep for some random amount of time
-    t2 = threading.Thread(name='client', target=client(rsHostname, rsListenPort)) # launch another thread for the client
-    t2.start()
-
-    time.sleep(5) # sleep for a bit to give the threads time to complete
-    print("Done.")
-
-    rs(rsListenPort)
     client(rsHostname, rsListenPort)
+
     
