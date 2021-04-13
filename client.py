@@ -12,83 +12,72 @@ def client(rsHostname, rsListenPort, tsListenPort):
     for line in linesList: 
         hostnameList.append(line.lower())
 
-    ''' create RS socket '''
+    # create RS socket 
     try:
-        # create RS socket
         csRS = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     except socket.error as err:
-        #print('socket open error: {} \n'.format(err))
         exit()
 
-    ''' connect to the RS server'''
+    # connect to RS server
     rsAddr = socket.gethostbyname(rsHostname)
     server_binding = (rsAddr, rsListenPort)
     csRS.connect(server_binding)
 
-    ''' create TS socket '''
+    # create TS socket 
     try:
-        # create TS socket
         csTS = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
     except socket.error as err:
-        #print('socket open error: {} \n'.format(err))
         exit()
 
-    # read last line of PROJI-DNSRS.txt to get tsHostname
+    # read last line of PROJI-DNSRS.txt to get TShostname
     with open("PROJI-DNSRS.txt", "r") as file:
         for lastLine in file:
             pass
     line = lastLine.split()
     tsHostname = line[0]
-    #print("tsHostname", tsHostname)
 
-    ''' connect to the TS server'''
+    # connect to TS server
     tsAddr = socket.gethostbyname(tsHostname)
     server_binding = (tsAddr, tsListenPort)
     csTS.connect(server_binding)
 
     # iterate through each hostName to talk to servers
     for hostname in hostnameList: 
-        # send queried hostname to RS 
-        csRS.send(hostname.encode('utf-8'))
+        csRS.send(hostname.encode('utf-8'))  # send queried hostname to RS
 
-        # receive RS's answer
-        receivedString = csRS.recv(300)
+        receivedString = csRS.recv(300) # receive RS's answer
         receivedString = receivedString.decode('utf-8').rstrip() 
-        #print("string received from RS: ", receivedString)
         word_list = receivedString.split()
 
-        # if last word of receivedString is A, we found a match
-        #print("word_list RS", word_list)
+        # if flag of receivedString is A, we found a match, write this to RESOLVED.txt
         if(word_list[-1] == "A"):
             with open('RESOLVED.txt', 'a') as the_file:
                 the_file.write(receivedString)
                 the_file.write("\n")
-            continue  # found a match so don't need to connect to TS, move onto next hostname
+            continue  # found a match so move onto next hostname
 
-        ''' connect to the TS server '''
-        # send queried hostname to RS 
+        # send queried hostname to TS
         csTS.send(hostname.encode('utf-8'))
 
-        # receive TS's answer
-        receivedString = csTS.recv(300)
+        receivedString = csTS.recv(300)  # receive TS's answer
         receivedString = receivedString.decode('utf-8').rstrip() 
 
-        #print("receivedString TS", receivedString)
+        # write to RESOLVED.txt file
         with open('RESOLVED.txt', 'a') as the_file:
             the_file.write(receivedString)
             the_file.write("\n")
 
-    #tell ts and rs to close connection
+    # if done going going through hostnames, tell TS and RS to close connection
     csRS.send("closeConnection".encode('utf-8'))
     csTS.send("closeConnection".encode('utf-8'))
 
-    # close the client socket
+    # close both sockets
     csRS.close()
     csTS.close()
+    exit()
 
 if __name__ == "__main__":
-    #rsHostname = "cray1.cs.rutgers.edu"
-    rsHostname = ""
+    rsHostname = ""      # type in hostname of machine that RS runs on
     rsListenPort = 50007
     tsListenPort = 50008
     
