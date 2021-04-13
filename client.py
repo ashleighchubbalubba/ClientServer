@@ -78,14 +78,17 @@ def client(rsHostname, rsListenPort, tsListenPort):
             the_file.write(receivedString)
             the_file.write("\n")
 
+    #tell ts and rs to close connection
+    csRS.send("closeConnection".encode('utf-8'))
+    csTS.send("closeConnection".encode('utf-8'))
+
     # close the client socket
     csRS.close()
     csTS.close()
-    exit()
-
 
 if __name__ == "__main__":
-    rsHostname = "cray1.cs.rutgers.edu"
+    #rsHostname = "cray1.cs.rutgers.edu"
+    rsHostname = ""
     rsListenPort = 50007
     tsListenPort = 50008
     

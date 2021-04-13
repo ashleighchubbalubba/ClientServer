@@ -33,6 +33,10 @@ def rs(rsListenPort):
         #print("Data received from the client: {}".format(data_from_client.decode('utf-8')))
         data_from_client = data_from_client.decode('utf-8').rstrip()
 
+        # if client finished sending all hostnames, close socket
+        if data_from_client == "closeConnection":
+			break
+
         string = ""
         hasMatched = False
         # searching the table for hostname that the client is requesting
@@ -49,14 +53,12 @@ def rs(rsListenPort):
         if(hasMatched is False):
             string = "" + dnsTable[-1][0] + " " + dnsTable[-1][1] + " " + dnsTable[-1][2]
 
-        #print("string being sent to client: ", string)
-        #print()
-        # send string to the client.  
+        # send string to the client.
         csockid.send(string.encode('utf-8'))
     
     # Close the server socket
     rs.close()
-    
+    exit() 
 
 if __name__ == "__main__":
     rsListenPort = 50007

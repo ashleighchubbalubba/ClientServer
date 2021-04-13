@@ -33,6 +33,10 @@ def ts(tsListenPort):
         #print("Data received from the client: {}".format(data_from_client.decode('utf-8')))
         data_from_client = data_from_client.decode('utf-8').rstrip()
 
+        # if client finished sending all hostnames, close socket
+        if data_from_client == "closeConnection":
+			break
+
         string = ""
         hasMatched = False
 
@@ -52,10 +56,10 @@ def ts(tsListenPort):
 
         # send string to the client.  
         csockid.send(string.encode('utf-8'))
-    
+
     # Close the server socket
-    ts.close()
-    
+    ts.close() 
+    exit()   
 
 if __name__ == "__main__":
     tsListenPort = 50008
