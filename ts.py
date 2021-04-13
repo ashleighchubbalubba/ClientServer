@@ -1,4 +1,3 @@
-import threading
 import time
 import random
 import socket
@@ -31,7 +30,7 @@ def ts(tsListenPort):
     while True:
         # Receive queried hostname from the client
         data_from_client = csockid.recv(300)
-        print("Data received from the client: {}".format(data_from_client.decode('utf-8')))
+        #print("Data received from the client: {}".format(data_from_client.decode('utf-8')))
         data_from_client = data_from_client.decode('utf-8').rstrip()
 
         string = ""

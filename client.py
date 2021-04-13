@@ -1,9 +1,6 @@
-import threading
 import time
 import random
 import socket
-from rs import rs
-from ts import ts  
 
 def client(rsHostname, rsListenPort, tsListenPort):
     # list that contains all queried hostnames
@@ -14,10 +11,8 @@ def client(rsHostname, rsListenPort, tsListenPort):
     linesList = file.readlines()
     for line in linesList: 
         hostnameList.append(line.lower())
-    
-    # get client's IP address
-    addr = socket.gethostbyname(rsHostname)
 
+    ''' create RS socket '''
     try:
         # create RS socket
         csRS = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -26,9 +21,11 @@ def client(rsHostname, rsListenPort, tsListenPort):
         exit()
 
     ''' connect to the RS server'''
-    server_binding = (addr, rsListenPort)
+    rsAddr = socket.gethostbyname(rsHostname)
+    server_binding = (rsAddr, rsListenPort)
     csRS.connect(server_binding)
 
+    ''' create TS socket '''
     try:
         # create TS socket
         csTS = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -36,8 +33,17 @@ def client(rsHostname, rsListenPort, tsListenPort):
         #print('socket open error: {} \n'.format(err))
         exit()
 
+    # read last line of PROJI-DNSRS.txt to get tsHostname
+    with open("PROJI-DNSRS.txt", "r") as file:
+        for lastLine in file:
+            pass
+    line = lastLine.split()
+    tsHostname = line[0]
+    #print("tsHostname", tsHostname)
+
     ''' connect to the TS server'''
-    server_binding = (addr, tsListenPort)
+    tsAddr = socket.gethostbyname(tsHostname)
+    server_binding = (tsAddr, tsListenPort)
     csTS.connect(server_binding)
 
     # iterate through each hostName to talk to servers
@@ -58,7 +64,7 @@ def client(rsHostname, rsListenPort, tsListenPort):
                 the_file.write(receivedString)
                 the_file.write("\n")
             continue  # found a match so don't need to connect to TS, move onto next hostname
-    
+
         ''' connect to the TS server '''
         # send queried hostname to RS 
         csTS.send(hostname.encode('utf-8'))
@@ -79,8 +85,7 @@ def client(rsHostname, rsListenPort, tsListenPort):
 
 
 if __name__ == "__main__":
-    #rsHostname = "LAPTOP-8NUTDG7L"
-    rsHostname = "Ashleighs-MacBook-Pro.local"
+    rsHostname = "cray1.cs.rutgers.edu"
     rsListenPort = 50007
     tsListenPort = 50008
     
