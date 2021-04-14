@@ -37,9 +37,9 @@ def rs(rsListenPort):
         hasMatched = False
         # search dnsTable for queried hostname
         for info in dnsTable:
-            info[0] = info[0].lower()
+            replacement = info[0].lower()
             # check hostname of each list stored in DNSTable 
-            if(info[0] == queriedHostname):
+            if(replacement == queriedHostname):
                 # there's a match! send "Hostname IPaddress A" to client
                 string = "" + info[0] + " " + info[1] + " " + info[2]
                 hasMatched = True
